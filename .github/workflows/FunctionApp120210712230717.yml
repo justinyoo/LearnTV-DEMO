@@ -1,0 +1,48 @@
+name: Build and deploy .NET Core application to Function App FunctionApp120210712230717 with API Management Service testlearntv-FunctionApp1
+on:
+  push:
+    branches:
+    - master
+env:
+  AZURE_FUNCTIONAPP_NAME: FunctionApp120210712230717
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: FunctionApp1\.
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 3.1.x
+  WORKING_DIRECTORY: FunctionApp1
+  DOTNET_CORE_VERSION_INPROC: ''
+  AZURE_APIM_RESOURCEGROUP: testlearntv
+  AZURE_APIM_SERVICENAME: testlearntv
+  AZURE_APIM_API_ID: FunctionApp1
+  AZURE_APIM_RESOURCE_PATH: /
+  AZURE_APIM_SWAGGERURL: https://functionapp120210712230717.azurewebsites.net/api/swagger.json
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    - name: Setup .NET Core (for inproc extensions)
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION_INPROC }}
+    - name: Restore
+      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+    - name: Build
+      run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+    - name: Publish
+      run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+    - name: Deploy to Azure Function App
+      uses: Azure/functions-action@v1
+      with:
+        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+        publish-profile: ${{ secrets.FUNCTIONAPP120210712230717_FFFF }}
+        package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.testlearntv_SPN }}
+    - name: Import API into Azure API Management
+      run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group ${{ env.AZURE_APIM_RESOURCEGROUP }} --service-name ${{ env.AZURE_APIM_SERVICENAME }} --api-id ${{ env.AZURE_APIM_API_ID }} --specification-url "${{ env.AZURE_APIM_SWAGGERURL }}" --specification-format OpenApi --subscription-required false

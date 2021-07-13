@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "storage1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/stbashshellkrc",
+      "type": "storage.azure",
+      "connectionId": "AzureWebJobsStorage"
+    },
+    "apis1": {
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/testlearntv/apis/FunctionApp1",
+      "type": "apis.azure"
+    }
+  }
+}
